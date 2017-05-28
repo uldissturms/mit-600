@@ -1,1 +1,1 @@
-watchmedo shell-command --patterns="*.py" --command='python "${watch_src_path}"'
+watchmedo shell-command --patterns="*.py" --command='python "${watch_src_path}"' & ptw

@@ -1,0 +1,1 @@
+pytest ./*_test.py
