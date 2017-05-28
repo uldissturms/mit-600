@@ -1,8 +1,5 @@
 # 6a + 9b + 20c = n // nugget problem
-
-def problem(name):
-    print "Problem: " + name
-    return
+from problem import *
 
 def maxFor(nuggets, weight):
     return (nuggets / weight) + 1
