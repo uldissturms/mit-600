@@ -25,22 +25,17 @@ def countSubStringMatchRecursive(target, key, count = 0):
 
 problem("return all matches")
 
-def add(matches, match):
-    new_matches = matches[:]
-    new_matches.append(match)
-    return new_matches
-
 def subStringMatchExact(target, key, offset = 0, matches = []):
     match = find(target, key)
     if (match == -1):
         return matches
     if (target == ""):
-        return add(matches, offset + match)
+        return append(offset + match, matches)
     return subStringMatchExact(
         target[(match + 1):],
         key,
         offset + match + 1,
-        add(matches, offset + match)
+        append(offset + match, matches)
     )
 
 problem("return partial matches")
