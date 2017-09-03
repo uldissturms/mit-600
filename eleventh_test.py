@@ -20,7 +20,11 @@ def test_robot_clean_and_update():
     assert room.getNumCleanedTiles() == 1
 
 def test_simple_simulation():
-    stats = runSimulation(1, 1, 10, 10, .9, 10, Robot, False)
-    avg_ticks = sum([len(s) for s in stats]) / len(stats)
+    avg_ticks = average(runSimulation(1, 1, 10, 10, .9, 10, Robot, False))
     assert avg_ticks <= 360
-    assert avg_ticks >= 300
+    assert avg_ticks >= 250
+
+def test_random_walk_robot():
+    avg_ticks = average(runSimulation(1, 1, 10, 10, .9, 10, RandomWalkRobot, False))
+    assert avg_ticks <= 900
+    assert avg_ticks >= 500

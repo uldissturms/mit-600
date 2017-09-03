@@ -9,7 +9,7 @@ import time
 from Tkinter import *
 
 class RobotVisualization:
-    def __init__(self, num_robots, width, height, delay = 5):
+    def __init__(self, num_robots, width, height, delay = 0.1):
         "Initializes a visualization with the specified parameters."
         # Number of seconds to pause after each frame
         self.delay = delay

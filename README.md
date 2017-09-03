@@ -2,3 +2,5 @@
 * video lectures
 * assignments
 * exams
+
+![Random vs Simple robot cleaning times](random-vs-simple-robot.png)

@@ -40,7 +40,6 @@ class RectangularRoom(object):
         self.cleaned = [[False] * width for i in range(height)]
     def cleanTileAtPosition(self, pos):
         self.cleaned[int(pos.getY())][int(pos.getX())] = True
-        print self.cleaned
     def isTileCleaned(self, m, n):
         return self.cleaned[m][n]
     def getNumTiles(self):
@@ -78,7 +77,6 @@ class BaseRobot(object):
 class Robot(BaseRobot):
     def updatePositionAndClean(self):
         position = self.getRobotPosition()
-        print 'cleanded', str(position)
         room = self.getRoom()
         room.cleanTileAtPosition(position)
         new_position = position.getNewPosition(self.direction, self.speed)
@@ -130,49 +128,80 @@ def computeMeans(list_of_lists):
     means = tots/float(len(list_of_lists))
     return means
 
+def average(stats):
+    return sum([len(s) for s in stats]) / len(stats)
 
 # === Problem 4
 def showPlot1():
-    """
-    Produces a plot showing dependence of cleaning time on room size.
-    """
-    # TODO: Your code goes here
+    pylab.title('Time to clean 75% of a square room with 1 robot, for various room sizes at speed 1')
+    pylab.xlabel('Room Area')
+    pylab.ylabel('Timesteps')
+    rooms = [(5, 5), (10, 10), (20, 20), (25, 25)]
+    times = [average(runSimulation(1, 1, width, height, 0.75, 10, Robot, False)) for width, height in rooms]
+    areas = [width * height for width, height in rooms]
+    pylab.plot(areas, times)
+    pylab.show()
 
 def showPlot2():
-    """
-    Produces a plot showing dependence of cleaning time on number of robots.
-    """
-    # TODO: Your code goes here
+    pylab.title('Time to clean 75% of a 25 x 25 room with 1 to 10 robots')
+    pylab.xlabel('Robots')
+    pylab.ylabel('Timesteps')
+    robots = range(1, 11)
+    times = [average(runSimulation(num_robots, 1, 25, 25, 0.75, 10, Robot, False)) for num_robots in robots]
+    pylab.plot(robots, times)
+    pylab.show()
 
 def showPlot3():
-    """
-    Produces a plot showing dependence of cleaning time on room shape.
-    """
-    # TODO: Your code goes here
+    pylab.title('Time to clean 75% of room with 2 robots, for various width to height ratios')
+    pylab.xlabel('Width/Height')
+    pylab.ylabel('Timesteps')
+    rooms = [(20, 20), (25, 16), (40, 10), (80, 5), (100, 4)]
+    times = [average(runSimulation(2, 1, width, height, 0.75, 10, Robot, False)) for width, height in rooms]
+    ratios = [width * 1.0 / height for width, height in rooms]
+    pylab.plot(ratios, times)
+    pylab.show()
+
+def times_for(values):
+    return range (1, len(values) + 1)
 
 def showPlot4():
-    """
-    Produces a plot showing cleaning time vs. percentage cleaned, for
-    each of 1-5 robots.
-    """
-    # TODO: Your code goes here
-
+    pylab.title('Time to clean 25 x 25 room with 1 to 5 robots')
+    pylab.xlabel('Percentage cleaned')
+    pylab.ylabel('Timesteps')
+    robots = range(1, 6)
+    means = [computeMeans(runSimulation(num_robots, 1, 25, 25, 1, 10, Robot, False)) for num_robots in robots]
+    current_robots = 1
+    for mean in means:
+        pylab.plot(mean, times_for(mean), label='{0} robots'.format(current_robots))
+        current_robots += 1
+    pylab.legend(loc=1)
+    pylab.show()
 
 # === Problem 5
 
 class RandomWalkRobot(BaseRobot):
-    """
-    A RandomWalkRobot is a robot with the "random walk" movement
-    strategy: it chooses a new direction at random after each
-    time-step.
-    """
-    # TODO: Your code goes here
-
+    def updatePositionAndClean(self):
+        position = self.getRobotPosition()
+        room = self.getRoom()
+        room.cleanTileAtPosition(position)
+        direction = random_angle()
+        self.setRobotDirection(direction)
+        new_position = position.getNewPosition(direction, self.speed)
+        if room.isPositionInRoom(new_position):
+            self.setRobotPosition(new_position)
 
 # === Problem 6
-
+'''
+Much bigger fluctuations can be observed in random walk robot and it takes much longer to clean the room fully
+'''
 def showPlot5():
-    """
-    Produces a plot comparing the two robot strategies.
-    """
-    # TODO: Your code goes here
+    pylab.title('Random vs Simple robot to clean 25 x 25 room')
+    pylab.xlabel('Percentage cleaned')
+    pylab.ylabel('Timesteps')
+    mean_random = computeMeans(runSimulation(1, 1, 25, 25, 1, 10, RandomWalkRobot, False))
+    mean_simple = computeMeans(runSimulation(1, 1, 25, 25, 1, 10, Robot, False))
+    pylab.plot(mean_random, times_for(mean_random), label='Random')
+    pylab.plot(mean_simple, times_for(mean_simple), label='Simple')
+    pylab.legend(loc=1)
+    pylab.show()
+
