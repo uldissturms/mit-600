@@ -82,7 +82,7 @@ class ResistantVirus(SimpleVirus):
         return random_event(self.mutProb)
 
     def mutateResistances(self, activeDrugs):
-        return {r:self.mutates(r) for r in list(set(self.resistances.keys() + activeDrugs))}
+        return {r:self.mutates(r) for r in self.resistances.keys()}
 
     def reproduce(self, popDensity, activeDrugs):
         nonResistantTo = [d for d in activeDrugs if not self.getResistance(d)]
@@ -123,7 +123,7 @@ class Patient(SimplePatient):
 
 def simulation(delay_in_treatment):
     drug = 'guttagonol'
-    viruses = [ResistantVirus(0.1, 0.05, {}, 0.005)] * 100
+    viruses = [ResistantVirus(0.1, 0.05, {'guttagonol':False, 'grimpex':False}, 0.005)] * 100
     patient = Patient(viruses, 1000)
     totalViruses = []
     drugResistViruses = []
@@ -149,52 +149,139 @@ def plot_simulation(delay_in_treatment):
     totalViruses, _ = simulation(delay_in_treatment)
     pylab.plot(totalViruses, label='{0} delay'.format(delay_in_treatment))
 
+def plot_histogram(delay_in_treatment):
+    stats = []
+    for _ in range(30):
+        totalViruses, _ = simulation(delay_in_treatment)
+        stats.append(totalViruses[-1])
+    pylab.title('Resistant virus patient treatment')
+    pylab.ylabel('Patients')
+    pylab.xlabel('Viruses')
+    pylab.hist(stats, label='{0} delay'.format(delay_in_treatment))
+    pylab.legend(loc=1)
+
 def problem5():
     pylab.title('Resistant virus patient treatment')
-    pylab.ylabel('Number of viruses')
+    pylab.ylabel('Viruses')
     pylab.xlabel('Timesteps')
     plot_simulation(300)
     plot_simulation(150)
     plot_simulation(75)
     plot_simulation(0)
     pylab.legend(loc=1)
+
+    pylab.figure()
+    plot_histogram(300)
+    pylab.figure()
+    plot_histogram(150)
+    pylab.figure()
+    plot_histogram(75)
+    pylab.figure()
+    plot_histogram(0)
+
     pylab.show()
 
-    """
-    Histograms of final total virus populations are displayed for delays of 300,
-    150, 75, 0 timesteps (followed by an additional 150 timesteps of
-    simulation).    
-    """
-    # TODO
+def plot_histogram_two_drugs(delay_in_treatment):
+    stats = []
+    for _ in range(30):
+        viruses = [ResistantVirus(0.1, 0.05, {'guttagonol':False, 'grimpex':False}, 0.005)] * 100
+        patient = Patient(viruses, 1000)
+        for _ in range(150):
+            patient.update()
+        patient.addPrescription('guttagonol')
+        for _ in range(delay_in_treatment):
+            patient.update()
+        patient.addPrescription('grimpex')
+        for _ in range(150):
+            patient.update()
+        stats.append(patient.getTotalPop())
 
-#
-# PROBLEM 6
-#
+    pylab.title('Resistant virus patient treatment two drugs')
+    pylab.ylabel('Patients')
+    pylab.xlabel('Viruses')
+    pylab.hist(stats, label='{0} delay'.format(delay_in_treatment))
+    pylab.legend(loc=1)
 
 def problem6():
-    """
-    Runs simulations and make histograms for problem 6.
+    plot_histogram_two_drugs(300)
+    pylab.figure()
+    plot_histogram_two_drugs(150)
+    pylab.figure()
+    plot_histogram_two_drugs(75)
+    pylab.figure()
+    plot_histogram_two_drugs(0)
+    pylab.show()
 
-    Runs multiple simulations to show the relationship between administration
-    of multiple drugs and patient outcome.
+def plot_two_drugs_with_delay():
+    total = []
+    guttagonol =  []
+    grimpex = []
+    both = []
+    viruses = [ResistantVirus(0.1, 0.05, {'guttagonol':False, 'grimpex': False}, 0.005)] * 100
+    patient = Patient(viruses, 1000)
 
-    Histograms of final total virus populations are displayed for lag times of
-    150, 75, 0 timesteps between adding drugs (followed by an additional 150
-    timesteps of simulation).
-    """
-    # TODO
+    for _ in range(150):
+        patient.update()
+        total.append(patient.getTotalPop())
+        guttagonol.append(patient.getResistPop(['guttagonol']))
+        grimpex.append(patient.getResistPop(['grimpex']))
+        both.append(patient.getResistPop(['guttagonol', 'grimpex']))
+    patient.addPrescription('guttagonol')
+    for _ in range(300):
+        patient.update()
+        total.append(patient.getTotalPop())
+        guttagonol.append(patient.getResistPop(['guttagonol']))
+        grimpex.append(patient.getResistPop(['grimpex']))
+        both.append(patient.getResistPop(['guttagonol', 'grimpex']))
+    patient.addPrescription('gripmex')
+    for _ in range(150):
+        patient.update()
+        total.append(patient.getTotalPop())
+        guttagonol.append(patient.getResistPop(['guttagonol']))
+        grimpex.append(patient.getResistPop(['grimpex']))
+        both.append(patient.getResistPop(['guttagonol', 'grimpex']))
+    pylab.title('Two drugs with delay')
+    pylab.ylabel('Viruses')
+    pylab.xlabel('Timesteps')
+    pylab.plot(total, label='total')
+    pylab.plot(guttagonol, label='guttagonol')
+    pylab.plot(grimpex, label='grimpex')
+    pylab.plot(both, label='both')
+    pylab.legend(loc=1)
 
-#
-# PROBLEM 7
-#
+def plot_two_drugs_no_delay():
+    total = []
+    guttagonol =  []
+    grimpex = []
+    both = []
+    viruses = [ResistantVirus(0.1, 0.05, {'guttagonol':False, 'grimpex':False}, 0.005)] * 100
+    patient = Patient(viruses, 1000)
+
+    for _ in range(150):
+        patient.update()
+        total.append(patient.getTotalPop())
+        guttagonol.append(patient.getResistPop(['guttagonol']))
+        grimpex.append(patient.getResistPop(['grimpex']))
+        both.append(patient.getResistPop(['guttagonol', 'grimpex']))
+    patient.addPrescription('guttagonol')
+    patient.addPrescription('grimpex')
+    for _ in range(150):
+        patient.update()
+        total.append(patient.getTotalPop())
+        guttagonol.append(patient.getResistPop(['guttagonol']))
+        grimpex.append(patient.getResistPop(['grimpex']))
+        both.append(patient.getResistPop(['guttagonol', 'grimpex']))
+    pylab.title('Two drugs without delay')
+    pylab.ylabel('Viruses')
+    pylab.xlabel('Timesteps')
+    pylab.plot(total, label='total')
+    pylab.plot(guttagonol, label='guttagonol')
+    pylab.plot(grimpex, label='grimpex')
+    pylab.plot(both, label='both')
+    pylab.legend(loc=1)
 
 def problem7():
-    """
-    Run simulations and plot graphs examining the relationship between
-    administration of multiple drugs and patient outcome.
-
-    Plots of total and drug-resistant viruses vs. time are made for a
-    simulation with a 300 time step delay between administering the 2 drugs and
-    a simulations for which drugs are administered simultaneously.        
-    """
-    # TODO
+    plot_two_drugs_with_delay()
+    pylab.figure()
+    plot_two_drugs_no_delay()
+    pylab.show()
