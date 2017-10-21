@@ -1,0 +1,13 @@
+argh==0.26.2
+cycler==0.10.0
+matplotlib==2.1.0
+numpy==1.13.3
+pathtools==0.1.2
+py==1.4.34
+pyparsing==2.2.0
+pytest==3.2.3
+python-dateutil==2.6.1
+pytz==2017.2
+PyYAML==3.12
+six==1.11.0
+watchdog==0.8.3

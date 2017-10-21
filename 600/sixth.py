@@ -2,6 +2,7 @@
 
 import random
 import string
+from time import *
 
 VOWELS = 'aeiou'
 CONSONANTS = 'bcdfghjklmnpqrstvwxyz'
@@ -24,14 +25,14 @@ def load_words():
     Depending on the size of the word list, this function may
     take a while to finish.
     """
-    print "Loading word list from file..."
+    print("Loading word list from file...")
     # inFile: file
-    inFile = open(WORDLIST_FILENAME, 'r', 0)
+    inFile = open(WORDLIST_FILENAME, 'r')
     # wordlist: list of strings
     wordlist = []
     for line in inFile:
         wordlist.append(line.strip().lower())
-    print "  ", len(wordlist), "words loaded."
+    print("  ", len(wordlist), "words loaded.")
     return wordlist
 
 def get_frequency_dict(sequence):
@@ -59,6 +60,9 @@ def get_frequency_dict(sequence):
 def add_bonus_if_earned(word, n, score):
     return score + 50 if len(word) == n else score
 
+def score_a_word(word):
+    return sum([SCRABBLE_LETTER_VALUES[c] for c in word])
+
 def get_word_score(word, n):
     """
     Returns the score for a word. Assumes the word is a
@@ -74,12 +78,18 @@ def get_word_score(word, n):
     word: string (lowercase letters)
     returns: int >= 0
     """
-    scores = [SCRABBLE_LETTER_VALUES[c] for c in word]
-    return add_bonus_if_earned(word, n, sum(scores))
+    return add_bonus_if_earned(word, n, score_a_word(word))
 
 #
-# Make sure you understand how this function works and what it does!
+# Make sure you understand how this function works and what it does
 #
+
+def flatten(list):
+    return [item for sublist in list for item in sublist]
+
+def dict_to_sorted_list(dict):
+    return flatten([[key] * dict[key] for key in sorted(dict.keys())])
+
 def display_hand(hand):
     """
     Displays the letters currently in the hand.
@@ -92,10 +102,7 @@ def display_hand(hand):
 
     hand: dictionary (string -> int)
     """
-    for letter in hand.keys():
-        for j in range(hand[letter]):
-            print letter,              # print all on the same line
-    print                              # print an empty line
+    return ' '.join(dict_to_sorted_list(hand))
 
 #
 # Make sure you understand how this function works and what it does!
@@ -134,7 +141,10 @@ def remove_empty(dict):
 def substract(dict, list):
     new_dict = dict.copy()
     for item in list:
-        new_dict[item] -= 1
+        if item in new_dict:
+            new_dict[item] -= 1
+        else:
+            new_dict[item] = -1
     return new_dict
 
 def update_hand(hand, word):
@@ -150,7 +160,7 @@ def update_hand(hand, word):
     Has no side effects: does not mutate hand.
 
     word: string
-    hand: dictionary (string -> int)    
+    hand: dictionary (string -> int)
     returns: dictionary (string -> int)
     """
     return remove_empty(substract(hand, list(word)))
@@ -159,7 +169,7 @@ def update_hand(hand, word):
 #
 # Problem #3: Test word validity
 #
-def is_valid_word(word, hand, word_list):
+def is_valid_word(word, hand, scored_word_list):
     """
     Returns True if word is in the word_list and is entirely
     composed of letters in the hand. Otherwise, returns False.
@@ -169,7 +179,7 @@ def is_valid_word(word, hand, word_list):
     hand: dictionary (string -> int)
     word_list: list of lowercase strings
     """
-    if word not in word_list:
+    if word not in scored_word_list:
         return False
     diff = substract(hand, word)
 
@@ -178,27 +188,85 @@ def is_valid_word(word, hand, word_list):
 #
 # Problem #4: Playing a hand
 #
-def play_hand(hand, word_list, total = 0):
-    print 'Current Hand:', display_hand(hand)
-    word = raw_input('Enter word, or a . to indicate that you are finished:')
-    if word == '.':
-        print 'Total score: %s points' % total
+def adjust_for_time_taken(score, time):
+    return score if time < 1 else round(score / time, 2)
+
+def prompt_for_a_word():
+    return raw_input('Enter word, or a . to indicate that you are finished:')
+
+# w - words in list
+# l - length of the longest word in list, expected to be > h
+# h - letters in hand
+
+# O(w*l+wlogw)
+def pick_best_word(hand, scored_word_list):
+
+    options = {word:scored_word_list[word] for word in scored_word_list.keys() if is_valid_word(word, hand, scored_word_list)}
+
+    return (sorted(options, key=options.get, reverse=True) or ['.'])[0]
+
+# O(h^2)
+def pick_best_word_faster(hand, rearranged_word_list):
+    sorted_hand = ''.join(dict_to_sorted_list(hand))
+    length = len(sorted_hand)
+
+    for size in range(length, 0, -1):
+        for offset in range(0, length - size + 1):
+            candidate = sorted_hand[offset:(size + offset)]
+            if candidate in rearranged_word_list:
+                return rearranged_word_list[candidate]
+
+    return '.'
+
+def get_time_limit(scored_word_list, k):
+    start_time = time()
+    for word in scored_word_list:
+        get_frequency_dict(word)
+        get_word_score(word, HAND_SIZE)
+    return (time() - start_time) * k
+
+def play_hand(hand, scored_word_list, rearranged_word_list, total_time, time_left, total = 0):
+    print('Current Hand:', display_hand(hand))
+    start_time = time()
+    word = pick_best_word_faster(hand, rearranged_word_list)
+    time_taken = time() - start_time
+    print('It took {:.2f} seconds to provide an answer'.format(time_taken))
+
+    time_left -= time_taken
+    if (time_left <= 0):
+        print('Total time exceeds {}. You scored {} points.'.format(total_time, total))
         return
 
-    if not is_valid_word(word, hand, word_list):
-        print '%s is not a valid word' % word
-        return play_hand(hand, word_list, total)
+    print('You have {:.2f} seconds remaining'.format(time_left))
 
-    score = get_word_score(word, HAND_SIZE)
+    if word == '.':
+        print('Total score: %s points' % total)
+        return
+
+    if not is_valid_word(word, hand, scored_word_list):
+        print('%s is not a valid word' % word)
+        return play_hand(hand, scored_word_list, rearranged_word_list, total_time, time_left, total)
+
+    score = adjust_for_time_taken(get_word_score(word, HAND_SIZE), time_taken)
     total += score
 
-    print '%s earned %s points. Total: %s points' % (word, score, total)
-    return play_hand(update_hand(hand, word), word_list, total)
+    print('%s earned %s points. Total: %s points' % (word, score, total))
+    return play_hand(update_hand(hand, word), scored_word_list, rearranged_word_list, total_time, time_left, total)
 
 #
 # Problem #5: Playing a game
 # Make sure you understand how this code works!
 #
+
+def prompt_for_total_time():
+    return int(raw_input('Enter time limit, in seconds, for players:'))
+
+def get_words_to_points(word_list):
+    return {word:score_a_word(word) for word in word_list}
+
+def get_word_rearrangements(word_list):
+    return {''.join(sorted(word)):word for word in word_list}
+
 def play_game(word_list):
     """
     Allow the user to play an arbitrary number of hands.
@@ -214,19 +282,24 @@ def play_game(word_list):
 
     * If the user inputs anything else, ask them again.
     """
+    scored_word_list = get_words_to_points(word_list)
+    rearranged_word_list = get_word_rearrangements(word_list)
+
     while True:
         cmd = raw_input('Enter n to deal a new hand, r to replay the last hand, or e to end game: ')
         if cmd == 'n':
+            total_time = prompt_for_total_time()
             hand = deal_hand(HAND_SIZE)
-            play_hand(hand.copy(), word_list)
-            print
+            play_hand(hand.copy(), scored_word_list, rearranged_word_list, total_time, total_time)
+            print()
         elif cmd == 'r':
-            play_hand(hand.copy(), word_list)
-            print
+            total_time = prompt_for_total_time()
+            play_hand(hand.copy(), scored_word_list, rearranged_word_list, total_time, total_time)
+            print()
         elif cmd == 'e':
             break
         else:
-            print "Invalid command."
+            print("Invalid command.")
 
 #
 # Build data structures used for entire session and play game
@@ -234,4 +307,3 @@ def play_game(word_list):
 if __name__ == '__main__':
     word_list = load_words()
     play_game(word_list)
-

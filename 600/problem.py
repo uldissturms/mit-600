@@ -1,5 +1,5 @@
 def problem(name):
-    print "Problem: " + name
+    print("Problem: " + name)
     return
 
 def append(item, to):

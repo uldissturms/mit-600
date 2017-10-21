@@ -6,7 +6,7 @@
 import math
 import time
 
-from Tkinter import *
+from tkinter import *
 
 class RobotVisualization:
     def __init__(self, num_robots, width, height, delay = 0.1):

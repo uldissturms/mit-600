@@ -9,6 +9,7 @@
 
 import time
 from itertools import *
+from functools import *
 
 SUBJECT_FILENAME = "subjects.txt"
 VALUE, WORK = 0, 1
@@ -51,7 +52,7 @@ def printSubjects(subjects):
         totalWork += work
     res = res + '\nTotal Value:\t' + str(totalVal) +'\n'
     res = res + 'Total Work:\t' + str(totalWork) + '\n'
-    print res
+    print(res)
 
 def cmpValue(subInfo1, subInfo2):
     """
@@ -98,7 +99,7 @@ def greedyAdvisor(subjects, maxWork, comparator):
     comparator: function taking two tuples and returning a bool
     returns: dictionary mapping subject name to (value, work)
     """
-    ranked = sorted(subjects.items(), key=lambda s: s[1], cmp=comparator, reverse=True)
+    ranked = sorted(subjects.items(), key=cmp_to_key(comparator), reverse=True)
     workAvailable = maxWork
     selected = []
     for subject in ranked: # can return early if workAvailable == 0

@@ -30,6 +30,8 @@ class Square(Shape):
         other: object to check for equality
         """
         return type(other) == Square and self.side == other.side
+    def __hash__(self):
+        return id(self)
 
 class Circle(Shape):
     def __init__(self, radius):
@@ -50,6 +52,8 @@ class Circle(Shape):
         other: object to check for equality
         """
         return type(other) == Circle and self.radius == other.radius
+    def __hash__(self):
+        return id(self)
 
 #
 # Problem 1: Create the Triangle class
@@ -64,12 +68,17 @@ class Triangle(Shape):
         return 'Triangle with base {0} and height {1}'.format(self.base, self.height)
     def __eq__(self, other):
         return type(other) == Triangle and self.base == other.base and self.height == other.height
+    def __hash__(self):
+        return id(self)
 
 #
 # Problem 2: Create the ShapeSet class
 #
 ## TO DO: Fill in the following code skeleton according to the
 ##    specifications.
+
+def cmp(a, b):
+    return (a > b) - (a < b)
 
 def cmp_shapes(left, right):
     leftType = type(left)
