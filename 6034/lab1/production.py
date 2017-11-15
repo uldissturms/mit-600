@@ -121,7 +121,7 @@ class IF(object):
                  delete_clause = ()):
         # Deal with an edge case imposed by type_encode()
         if type(conditional) == list and action == None:
-            return apply(self.__init__, conditional)
+            return self.__init__(*conditional)
         
         # Allow 'action' to be either a single string or an
         # iterable list of strings
@@ -151,8 +151,8 @@ class IF(object):
                 new_rules.add( populate(a, k) )
                 if len(new_rules) != old_rules_count:
                     if verbose:
-                        print("Rule:", self)
-                        print("Added:", populate(a, k))
+                        print(("Rule:", self))
+                        print(("Added:", populate(a, k)))
                     if apply_only_one:
                         return tuple(sorted(new_rules))
             for d in self._delete_clause:
@@ -160,8 +160,8 @@ class IF(object):
                     new_rules.remove( populate(d, k) )
                     if len(new_rules) != old_rules_count:
                         if verbose:
-                            print("Rule:", self)
-                            print("Deleted:", populate(d, k))
+                            print(("Rule:", self))
+                            print(("Deleted:", populate(d, k)))
                         if apply_only_one:
                             return tuple(sorted(new_rules))
                 except KeyError:
@@ -370,7 +370,7 @@ def uniq(lst):
     seen = {}
     result = []
     for item in lst:
-        if not seen.has_key(str(item)):
+        if str(item) not in seen:
             result.append(item)
             seen[str(item)]=True
     return result

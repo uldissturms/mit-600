@@ -260,7 +260,7 @@ from backchain import backchain_to_goal_tree
 ##; Section 3: Survey ##
 # Please answer these questions inside the double quotes.
 
-HOW_MANY_HOURS_THIS_PSET_TOOK = ''
-WHAT_I_FOUND_INTERESTING = ''
-WHAT_I_FOUND_BORING = ''
+HOW_MANY_HOURS_THIS_PSET_TOOK = '24'
+WHAT_I_FOUND_INTERESTING = 'backchaining'
+WHAT_I_FOUND_BORING = 'undestanding test setup - why not use pytest or other standard?'
 

@@ -1,22 +1,40 @@
-from production import AND, OR, NOT, PASS, FAIL, IF, THEN, \
-     match, populate, simplify, variables
-from zookeeper import ZOOKEEPER_RULES
+from production import AND, OR, match, populate, simplify
+from collections import ChainMap
 
-# This function, which you need to write, takes in a hypothesis
-# that can be determined using a set of rules, and outputs a goal
-# tree of which statements it would need to test to prove that
-# hypothesis. Refer to the problem set (section 2) for more
-# detailed specifications and examples.
+def rule_consequent_matches_hypothesis(rule, hypothesis):
+    return map(lambda c: c == hypothesis or match(c, hypothesis), rule.consequent())
 
-# Note that this function is supposed to be a general
-# backchainer.  You should not hard-code anything that is
-# specific to a particular rule set.  The backchainer will be
-# tested on things other than ZOOKEEPER_RULES.
+only_dicts = lambda x: isinstance(x, dict)
 
+def merge(obj):
+    return dict(ChainMap(*filter(only_dicts, obj)))
 
 def backchain_to_goal_tree(rules, hypothesis):
-    raise NotImplementedError
+    matching_rules = [r for r in rules
+        if any(rule_consequent_matches_hypothesis(r, hypothesis))
+    ]
+    if len(matching_rules) == 0:
+        return hypothesis
 
-# Here's an example of running the backward chainer - uncomment
-# it to see it work:
-#print backchain_to_goal_tree(ZOOKEEPER_RULES, 'opus is a penguin')
+    subtrees = []
+    for rule in matching_rules:
+        binding = merge(
+            rule_consequent_matches_hypothesis(rule, hypothesis)
+        )
+        subtree = antecedent_goal_tree(rule, rules, binding)
+        subtrees.append(subtree)
+
+    return simplify(OR(hypothesis, *subtrees))
+
+def antecedent_goal_tree(rule, rules, binding):
+    antedecents = rule.antecedent()
+
+    if isinstance(antedecents, str):
+        return backchain_to_goal_tree(rules, populate(antedecents, binding))
+
+    subtrees = []
+    for antedecent in antedecents:
+        subtree = backchain_to_goal_tree(rules, populate(antedecent, binding))
+        subtrees.append(subtree)
+
+    return type(antedecents)(*subtrees)
