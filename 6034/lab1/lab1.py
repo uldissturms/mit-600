@@ -1,4 +1,4 @@
-# lab1.py 
+# lab1.py
 
 #You should start here when providing the answers to Problem Set 1.
 #Follow along in the problem set, which is at:
@@ -17,7 +17,7 @@ from production import IF, AND, OR, NOT, THEN, forward_chain
 #    2. the consequent
 #    3. both
 
-ANSWER_1 = 'your answer here'
+ANSWER_1 = '2'
 
 # A rule-based system about Monty Python's "Dead Parrot" sketch
 # uses the following rules:
@@ -37,10 +37,10 @@ ANSWER_1 = 'your answer here'
 
 # Will this system produce the datum 'Polly is pining for the
 # fjords'?  Answer 'yes' or 'no'.
-ANSWER_2 = 'your answer here'
+ANSWER_2 = 'no'
 
 # Which rule contains a programming error? Answer '1' or '2'.
-ANSWER_3 = 'your answer here'
+ANSWER_3 = '2'
 
 # If you're uncertain of these answers, look in tests.py for an
 # explanation.
@@ -69,11 +69,11 @@ ANSWER_3 = 'your answer here'
 # what is asked.  After we start the system running, which rule
 # fires first?
 
-ANSWER_4 = 'your answer here'
+ANSWER_4 = '1'
 
 # Which rule fires second?
 
-ANSWER_5 = 'your answer here'
+ANSWER_5 = '0'
 
 
 # Problem 1.3.1: Poker hands
@@ -90,7 +90,8 @@ poker_data = ( 'two-pair beats pair',
 # which poker hands beat which, transitively. For example, it
 # should be able to deduce that a three-of-a-kind beats a pair,
 # because a three-of-a-kind beats two-pair, which beats a pair.
-transitive_rule = IF( AND(), THEN() )
+transitive_rule_template = lambda x, y, z: IF( AND('(?x) %s (?y)' % x, '(?y) %s (?z)' % y), THEN('(?x) %s (?z)' % z ))
+transitive_rule = transitive_rule_template(*(['beats'] * 3))
 
 # You can test your rule like this:
 # print forward_chain([transitive_rule], poker_data)
@@ -100,8 +101,8 @@ transitive_rule = IF( AND(), THEN() )
 TEST_RESULTS_TRANS1 = forward_chain([transitive_rule],
                                     [ 'a beats b', 'b beats c' ])
 TEST_RESULTS_TRANS2 = forward_chain([transitive_rule],
-  [ 'rock beats scissors', 
-    'scissors beats paper', 
+  [ 'rock beats scissors',
+    'scissors beats paper',
     'paper beats rock' ])
 
 
@@ -114,7 +115,53 @@ TEST_RESULTS_TRANS2 = forward_chain([transitive_rule],
 
 # Then, put them together into a list in order, and call it
 # family_rules.
-family_rules = [ ]                    # fill me in
+
+identity_rule = IF(
+    '(?gender) (?x)',
+    THEN('identity (?x) (?x)')
+)
+sibling_rule = IF(
+    AND('parent (?y) (?x)', 'parent (?y) (?z)', NOT('identity (?x) (?z)')),
+    THEN('sibling (?x) (?z)')
+)
+parent_rule = lambda x, y: IF(
+    AND('%s (?x)' % x, 'parent (?x) (?y)'),
+    THEN('%s (?x) (?y)' % y)
+)
+children_rule = lambda x, y: IF(
+    AND('%s (?x)' % x, 'parent (?y) (?x)'),
+    THEN('%s (?x) (?y)' % y)
+)
+sibling_rule_for_gender = lambda x, y: IF(
+    AND('%s (?x)' % x, 'sibling (?x) (?y)'),
+    THEN('%s (?x) (?y)' % y)
+)
+cousin_rule = IF(
+    AND('parent (?x) (?x1)', 'parent (?y) (?y1)', 'sibling (?x) (?y)'),
+    THEN('cousin (?x1) (?y1)')
+)
+grandparent_rule = IF(
+    AND('parent (?x) (?y)', 'parent (?y) (?z)'),
+    THEN('grandparent (?x) (?z)')
+)
+grandchild_rule = IF(
+    AND('parent (?x) (?y)', 'parent (?y) (?z)'),
+    THEN('grandchild (?z) (?x)')
+)
+
+family_rules = [
+    identity_rule,
+    sibling_rule,
+    sibling_rule_for_gender('male', 'brother'),
+    sibling_rule_for_gender('female', 'sister'),
+    parent_rule('male', 'father'),
+    parent_rule('female', 'mother'),
+    children_rule('male', 'son'),
+    children_rule('female', 'daughter'),
+    cousin_rule,
+    grandparent_rule,
+    grandchild_rule
+]
 
 # Some examples to try it on:
 # Note: These are used for testing, so DO NOT CHANGE

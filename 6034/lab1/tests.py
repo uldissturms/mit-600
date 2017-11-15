@@ -123,7 +123,7 @@ make_test(type = 'VALUE',
 transitive_rule_1_getargs = "TEST_RESULTS_TRANS1"
 
 def transitive_rule_1_testanswer(val, original_val = None):
-    return ( set(val)  == set([ 'a beats b', 
+    return ( set(val)  == set([ 'a beats b',
                                 'b beats c', 'a beats c' ]) )
 
 # This test checks to make sure that your transitive rule
@@ -174,7 +174,7 @@ expected_family_relations = [
     'son bob chuck',
     'daughter alice chuck',
     'father chuck alice' ]
-    
+
 def family_rules_1_testanswer(val, original_val = None):
     return ( set( [ x for x in val
                     if x.split()[0] in (

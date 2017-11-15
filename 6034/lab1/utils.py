@@ -21,7 +21,7 @@ class NoClobberDict(MutableMapping):
         return self._dict[key]
 
     def __setitem__(self, key, value):
-        if self._dict.has_key(key) and self._dict[key] != value:
+        if key in self._dict and self._dict[key] != value:
             raise ClobberedDictKey((key, value))
 
         self._dict[key] = value
@@ -36,10 +36,10 @@ class NoClobberDict(MutableMapping):
         return self._dict.__iter__()
 
     def iteritems(self):
-        return self._dict.iteritems()
+        return iter(self._dict.items())
 
     def keys(self):
-        return self._dict.keys()
+        return list(self._dict.keys())
 
     def __len__(self):
         return len(self._dict)

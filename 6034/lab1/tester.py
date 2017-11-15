@@ -254,7 +254,7 @@ def test_online(verbosity=1):
 
     print("Done submitting code.")
     print("Running test cases...")
-    
+
     for index, testcode in enumerate(tests):
         dispindex = index+1
         summary = test_summary(dispindex, ntests)
@@ -268,15 +268,12 @@ def test_online(verbosity=1):
         correct, expected = server.send_answer(username, password, lab.__name__, testcode[0], type_encode(answer))
         show_result(summary, testcode, correct, answer, expected, verbosity)
         if correct: ncorrect += 1
-    
+
     response = server.status(username, password, lab.__name__)
     print(response)
 
-
-
 if __name__ == '__main__':
     test_offline()
-        
 
 def make_test_counter_decorator():
     tests = []
@@ -288,7 +285,7 @@ def make_test_counter_decorator():
             getargs = lambda: getargs
         else:
             getargs_name = "_".join(getargs.__name__[:-8].split('_')[:-1])
-            
+
         tests.append( ( getargs_name,
                         getargs,
                         testanswer,
