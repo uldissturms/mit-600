@@ -45,14 +45,14 @@ def path_to_goal(path, goal):
 
 def search(graph, start, goal, strategy):
     agenda = [[start]]
-    extended_list = []
+    extended_list = set()
     while len(agenda) != 0:
         path = agenda.pop(0)
         if path_to_goal(path, goal):
             return path
         current = path[-1]
         if current not in extended_list:
-            extended_list.append(current)
+            extended_list.add(current)
             paths = []
             for node in [n for n in graph.get_connected_nodes(current) if n not in path]:
                 paths.append(path + [node])
@@ -70,6 +70,7 @@ def bfs(graph, start, goal):
 def dfs(graph, start, goal):
     return search(graph, start, goal, lambda a, p: p + a)
 
+sort_by_heuristic = lambda p, g, graph: sorted(p, key=lambda x: graph.get_heuristic(x[-1], g))
 
 ## Now we're going to add some heuristics into the search.  
 ## Remember that hill-climbing is a modified version of depth-first search.
@@ -79,7 +80,7 @@ def hill_climbing(graph, start, goal):
         graph,
         start,
         goal,
-        lambda a, p: sorted(p, key=lambda x: graph.get_heuristic(x[-1], goal)) + a
+        lambda a, p: sort_by_heuristic(p, goal, graph) + a
     )
 
 
@@ -93,7 +94,7 @@ def beam_search(graph, start, goal, beam_width):
         graph,
         start,
         goal,
-        lambda a, p: (a + sorted(p, key=lambda x: graph.get_heuristic(x[-1], goal)))[:beam_width]
+        lambda a, p: (a + sort_by_heuristic(p, goal, graph))[:beam_width]
     )
 
 ## Now we're going to try optimal search.  The previous searches haven't
@@ -107,11 +108,28 @@ def path_length(graph, node_names):
         length += graph.get_edge(node_names[i], node_names[i+1]).length
     return length
 
+sort_by_cost = lambda p, graph: sorted(p, key=lambda x: path_length(graph, x))
+
 def branch_and_bound(graph, start, goal):
-    raise NotImplementedError
+    return search(
+        graph,
+        start,
+        goal,
+        lambda a, p: sort_by_cost(a + p, graph)
+    )
+
+sort_by_cost_plus_heurestic = lambda p, g, graph: sorted(
+    p,
+    key=lambda x: path_length(graph, x) + graph.get_heuristic(x[-1], g)
+)
 
 def a_star(graph, start, goal):
-    raise NotImplementedError
+    return search(
+        graph,
+        start,
+        goal,
+        lambda a, p: sort_by_cost_plus_heurestic(a + p, goal, graph)
+    )
 
 
 ## It's useful to determine if a graph has a consistent and admissible
@@ -120,10 +138,23 @@ def a_star(graph, start, goal):
 ## consistent, but not admissible?
 
 def is_admissible(graph, goal):
-    raise NotImplementedError
+    for node in graph.nodes:
+        if graph.get_heuristic(node, goal) > path_length(
+            graph,
+            branch_and_bound(graph, node, goal)
+        ):
+            return False
+
+    return True
 
 def is_consistent(graph, goal):
-    raise NotImplementedError
+    for edge in graph.edges:
+        h1 = graph.get_heuristic(edge.node1, goal)
+        h2 = graph.get_heuristic(edge.node2, goal)
+        if edge.length < abs(h1 - h2):
+            return False
+
+    return True
 
 HOW_MANY_HOURS_THIS_PSET_TOOK = '5'
 WHAT_I_FOUND_INTERESTING = 'the way different sorts can be implemented using most of single function'
