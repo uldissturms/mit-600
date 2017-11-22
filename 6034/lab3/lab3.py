@@ -57,24 +57,14 @@ def focused_evaluate(board):
     A return value >= 1000 means that the current player has won;
     a return value <= -1000 means that the current player has lost
     """
-    current_player = board.get_current_player_id()
-    steps = board.num_tokens_on_board()
-
-    if board.is_win() == current_player:
-        return 2000 - steps * 10
-    if board.is_game_over():
-        return -2000 + steps * 10
+    won = board.is_win()
+    if won == board.get_current_player_id():
+        return step_strategy(1000, board)
+    elif won == board.get_other_player_id():
+        return step_strategy(-1000, board)
 
     score = board.longest_chain(board.get_current_player_id()) * 100
-    # Prefer having your pieces in the center of the board.
-    for row in range(6):
-        for col in range(7):
-            if board.get_cell(row, col) == board.get_current_player_id():
-                score -= abs(3-col)
-            elif board.get_cell(row, col) == board.get_other_player_id():
-                score += abs(3-col)
-
-    return score
+    return score + center_strategy(board)
 
 
 ## Create a "player" function that uses the focused_evaluate function
@@ -98,15 +88,16 @@ def alpha_beta_search(board,
     alpha = NEG_INFINITY
     beta = INFINITY
     best_move = None
- 
+
     for move, new_board in get_next_moves_fn(board):
         val = alpha_beta_min_value(new_board, depth-1, alpha, beta, eval_fn, get_next_moves_fn, is_terminal_fn)
         if val > alpha:
             alpha = val
             best_move = move
- 
+    print('Alpha: Decided on column %s with rating %s' % (best_move, alpha))
+
     return best_move
- 
+
 def alpha_beta_max_value(board, depth, alpha, beta, eval_fn, get_next_moves_fn, is_terminal_fn):
     if is_terminal_fn(depth, board):
         return eval_fn(board)
@@ -117,7 +108,7 @@ def alpha_beta_max_value(board, depth, alpha, beta, eval_fn, get_next_moves_fn, 
         if alpha >= beta:
             return alpha
     return v
- 
+
 def alpha_beta_min_value(board, depth, alpha, beta, eval_fn, get_next_moves_fn, is_terminal_fn):
     if is_terminal_fn(depth, board):
         return -eval_fn(board)
@@ -150,13 +141,39 @@ ab_iterative_player = lambda board: \
 ## same depth.
 
 def better_evaluate(board):
-    raise NotImplementedError
+    won = board.is_win()
+    if won == board.get_current_player_id():
+        return step_strategy(1000000, board)
+    elif won == board.get_other_player_id():
+        return step_strategy(-1000000, board)
+
+    return (chain_strategy(board, board.get_current_player_id())
+            - chain_strategy(board, board.get_other_player_id())
+            + center_strategy(board)
+            )
+
+def step_strategy(score, board):
+    steps = board.num_tokens_on_board()
+    return score + steps
+
+def chain_strategy(board, player):
+    return sum(map(lambda x: x**2, map(len, board.chain_cells(player))))
+
+def center_strategy(board):
+    score = 0
+    for row in range(6):
+        for col in range(7):
+            if board.get_cell(row, col) == board.get_current_player_id():
+                score -= abs(3-col)
+            elif board.get_cell(row, col) == board.get_other_player_id():
+                score += abs(3-col)
+    return score
 
 # Comment this line after you've fully implemented better_evaluate
-better_evaluate = memoize(basic_evaluate)
+# better_evaluate = memoize(basic_evaluate)
 
 # Uncomment this line to make your better_evaluate run faster.
-# better_evaluate = memoize(better_evaluate)
+better_evaluate = memoize(better_evaluate)
 
 # For debugging: Change this if-guard to True, to unit-test
 # your better_evaluate function.
@@ -217,9 +234,9 @@ def run_test_tree_search(search, board, depth):
 COMPETE = (True)
 
 ## The standard survey questions.
-HOW_MANY_HOURS_THIS_PSET_TOOK = "1"
-WHAT_I_FOUND_INTERESTING = "TBD"
-WHAT_I_FOUND_BORING = "TBD"
+HOW_MANY_HOURS_THIS_PSET_TOOK = "5"
+WHAT_I_FOUND_INTERESTING = "alpha beta pruner"
+WHAT_I_FOUND_BORING = "waiting for tests to run"
 NAME = "Uldis Sturms"
 EMAIL = "uldis.sturms@gmail.com"
 

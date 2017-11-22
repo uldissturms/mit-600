@@ -95,20 +95,14 @@ class ConnectFourBoard(object):
         """
         if sys.stdout.encoding and 'UTF' not in sys.stdout.encoding: # If we don't support Unicode
             self.board_symbol_mapping = self.board_symbol_mapping_ascii
-        
+
         if board_array == None:
             self._board_array = ( ( 0, ) * self.board_width , ) * self.board_height
         else:
             # Make sure we're storing tuples, so that they're immutable
             self._board_array = tuple( map(tuple, board_array) )
 
-        #if board_already_won:
-        #    self._is_win = board_already_won
-        #elif modified_column:
-        #    self._is_win = self._is_win_from_cell(self.get_height_of_column(modified_column), modified_column)
-        #else:
         self._is_win = self.is_win()
-            
         self.current_player = current_player
 
     def get_current_player_id(self):
@@ -121,7 +115,7 @@ class ConnectFourBoard(object):
             return 2
         else:
             return 1
-        
+
     def get_board_array(self):
         """ Return the board array representing this board (as a tuple of tuples) """
         return self._board_array
