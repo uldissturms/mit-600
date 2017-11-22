@@ -57,10 +57,24 @@ def focused_evaluate(board):
     A return value >= 1000 means that the current player has won;
     a return value <= -1000 means that the current player has lost
     """
-    if board.is_win() == board.get_current_player_id():
-        return 1001
+    current_player = board.get_current_player_id()
+    steps = board.num_tokens_on_board()
 
-    return basic_evaluate(board)
+    if board.is_win() == current_player:
+        return 2000 - steps * 10
+    if board.is_game_over():
+        return -2000 + steps * 10
+
+    score = board.longest_chain(board.get_current_player_id()) * 100
+    # Prefer having your pieces in the center of the board.
+    for row in range(6):
+        for col in range(7):
+            if board.get_cell(row, col) == board.get_current_player_id():
+                score -= abs(3-col)
+            elif board.get_cell(row, col) == board.get_other_player_id():
+                score += abs(3-col)
+
+    return score
 
 
 ## Create a "player" function that uses the focused_evaluate function
@@ -68,7 +82,7 @@ quick_to_win_player = lambda board: minimax(board, depth=4,
                                             eval_fn=focused_evaluate)
 
 ## You can try out your new evaluation function by uncommenting this line:
-run_game(basic_player, quick_to_win_player)
+#run_game(basic_player, quick_to_win_player)
 
 ## Write an alpha-beta-search procedure that acts like the minimax-search
 ## procedure, but uses alpha-beta pruning to avoid searching bad ideas
@@ -76,16 +90,44 @@ run_game(basic_player, quick_to_win_player)
 ## counting the number of static evaluations you make.
 ##
 ## You can use minimax() in basicplayer.py as an example.
-def alpha_beta_search(board, depth,
+def alpha_beta_search(board,
+                      depth,
                       eval_fn,
-                      # NOTE: You should use get_next_moves_fn when generating
-                      # next board configurations, and is_terminal_fn when
-                      # checking game termination.
-                      # The default functions set here will work
-                      # for connect_four.
                       get_next_moves_fn=get_all_next_moves,
                      is_terminal_fn=is_terminal):
-    raise NotImplementedError
+    alpha = NEG_INFINITY
+    beta = INFINITY
+    best_move = None
+ 
+    for move, new_board in get_next_moves_fn(board):
+        val = alpha_beta_min_value(new_board, depth-1, alpha, beta, eval_fn, get_next_moves_fn, is_terminal_fn)
+        if val > alpha:
+            alpha = val
+            best_move = move
+ 
+    return best_move
+ 
+def alpha_beta_max_value(board, depth, alpha, beta, eval_fn, get_next_moves_fn, is_terminal_fn):
+    if is_terminal_fn(depth, board):
+        return eval_fn(board)
+    v = alpha
+    for move, new_board in get_next_moves_fn(board):
+        v = max(v, alpha_beta_min_value(new_board, depth-1, alpha, beta, eval_fn, get_next_moves_fn, is_terminal_fn))
+        alpha = max(alpha, v)
+        if alpha >= beta:
+            return alpha
+    return v
+ 
+def alpha_beta_min_value(board, depth, alpha, beta, eval_fn, get_next_moves_fn, is_terminal_fn):
+    if is_terminal_fn(depth, board):
+        return -eval_fn(board)
+    v = beta
+    for move, new_board in get_next_moves_fn(board):
+        v = min(v, alpha_beta_max_value(new_board, depth-1, alpha, beta, eval_fn, get_next_moves_fn, is_terminal_fn))
+        beta = min(beta, v)
+        if alpha >= beta:
+            return beta
+    return v
 
 ## Now you should be able to search twice as deep in the same amount of time.
 ## (Of course, this alpha-beta-player won't work until you've defined
