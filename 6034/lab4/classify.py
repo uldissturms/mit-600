@@ -57,12 +57,17 @@ def hamming_distance(list1, list2):
 
 edit_distance = hamming_distance
 
+def except_party(party, data):
+    return filter(lambda x: x['party'] != party, data)
+
 def nearest_neighbors(distance, k=1):
     def nearest_neighbors_classifier(train):
         def classify_value(query):
             best_distance = INFINITY
-            ordered = sorted(train, key=lambda x: distance(query['votes'],
-            x['votes']))
+            ordered = sorted(
+                except_party('Independent', train),
+                key=lambda x: distance(query['votes'], x['votes'])
+            )
             nearest = [x['party'] for x in ordered[:k]]
             best_class = None
             best_count = 0

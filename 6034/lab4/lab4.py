@@ -62,7 +62,7 @@ def discover_new_unassigned_singletons(queue, visited, state):
     singletons = list(filter(unassigned_singletons, state.get_all_variables()))
     queue.extend([s for s in singletons if s not in visited])
 
-unassigned_singletons = lambda v: v.get_assigned_value() == None and v.domain_size() == 1
+unassigned_singletons = lambda v: not v.is_assigned() and v.domain_size() == 1
 
 ## The code here are for the tester
 ## Do not change.
@@ -103,8 +103,7 @@ senate_group1, senate_group2 = crosscheck_groups(senate_people)
 ## computes Hamming distances.
 
 def euclidean_distance(list1, list2):
-    # this is not the right solution!
-    return hamming_distance(list1, list2)
+    return math.sqrt(sum([(x-y) ** 2 for x, y in zip(list1, list2)]))
 
 #Once you have implemented euclidean_distance, you can check the results:
 #evaluate(nearest_neighbors(euclidean_distance, 1), senate_group1, senate_group2)
@@ -113,7 +112,7 @@ def euclidean_distance(list1, list2):
 ## deals better with independents. Make a classifier that makes at most 3
 ## errors on the Senate.
 
-my_classifier = nearest_neighbors(hamming_distance, 1)
+my_classifier = nearest_neighbors(euclidean_distance, 1)
 #evaluate(my_classifier, senate_group1, senate_group2, verbose=1)
 
 ### Part 2: ID Trees
@@ -123,7 +122,18 @@ my_classifier = nearest_neighbors(hamming_distance, 1)
 ## which should lead to simpler trees.
 
 def information_disorder(yes, no):
-    return homogeneous_disorder(yes, no)
+    votes = yes + no
+    classes = list(set(votes))
+    return disorder_in(votes, yes, classes) + disorder_in(votes, no, classes)
+
+def disorder_in(T, l, classes):
+    return len(l)/len(T)*sum([disorder_for_class(l, c) for c in classes])
+
+def disorder_for_class(l, c):
+    a = len(list(filter(lambda x: x == c, l)))
+    if a == 0:
+        return 0
+    return (-a/len(l))*math.log(a/len(l), 2)
 
 #print CongressIDTree(senate_people, senate_votes, information_disorder)
 #evaluate(idtree_maker(senate_votes, homogeneous_disorder), senate_group1, senate_group2)
@@ -153,15 +163,15 @@ def limited_house_classifier(house_people, house_votes, n, verbose = False):
                                    
 ## Find a value of n that classifies at least 430 representatives correctly.
 ## Hint: It's not 10.
-N_1 = 10
+N_1 = 44
 rep_classified = limited_house_classifier(house_people, house_votes, N_1)
 
 ## Find a value of n that classifies at least 90 senators correctly.
-N_2 = 10
+N_2 = 67
 senator_classified = limited_house_classifier(senate_people, senate_votes, N_2)
 
 ## Now, find a value of n that classifies at least 95 of last year's senators correctly.
-N_3 = 10
+N_3 = 23
 old_senator_classified = limited_house_classifier(last_senate_people, last_senate_votes, N_3)
 
 
