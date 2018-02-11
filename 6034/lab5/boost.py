@@ -1,6 +1,8 @@
+from sets import Set as set
 from data_reader import *
 import math
-import Orange
+import orange_for_6034
+import orange
 
 class Classifier():
     """
@@ -251,7 +253,7 @@ class BoostClassifier(Classifier):
         self.renormalize_weights()
         best_classifier, best_error = self.best_classifier()
         if verbose:
-            print("[error=%4.4f]" % best_error, best_classifier)
+            print "[error=%4.4f]" % best_error, best_classifier
         self.update_weights(best_error, best_classifier)
         self.classifiers.append((best_classifier, error_to_alpha(best_error)))
 
@@ -311,19 +313,19 @@ class OrangeWrapperClassifier(Classifier):
 #>
 #< BoostOrangeClassifier
 
-class BoostOrangeClassifier(Orange.Classifier):
+class BoostOrangeClassifier(orange.Classifier):
     def __init__(self, domain, classifier):
         self.classVar = domain.classVar
         self.classifier = classifier
-    def __call__(self, example, what = Orange.Classifier.GetValue):
+    def __call__(self, example, what = orange.Classifier.GetValue):
         probability = self.classifier.orange_classify(example)
 
-        answer = Orange.Value(self.classVar, int(round(probability)))
-        probabilities = Orange.DiscDistribution(self.classVar)
+        answer = orange.Value(self.classVar, int(round(probability)))
+        probabilities = orange.DiscDistribution(self.classVar)
         probabilities[answer] = probability
-        if what == Orange.Classifier.GetValue:
+        if what == orange.Classifier.GetValue:
             return answer
-        elif what == Orange.Classifier.GetProbabilities:
+        elif what == orange.Classifier.GetProbabilities:
             return probabilities
         else:
             return answer, probabilities
@@ -333,7 +335,7 @@ class BoostOrangeClassifier(Orange.Classifier):
 #>
 #< BoostOrangeLearner
 
-class BoostOrangeLearner(Orange.Learner):
+class BoostOrangeLearner(orange.Learner):
     # the BoostClassifier above is already a Learner in the Orange sense,
     # because Orange separates the training (Learner) from the classification,
     # but the BoostClassifier combines them.
@@ -345,7 +347,7 @@ class BoostOrangeLearner(Orange.Learner):
         # FIXME: I have no idea what weightID is supposed to do.  :-/
         classifiers = []
         ourdata = data
-        if isinstance(self.learners[list(self.learners.keys())[0]], Orange.Learner):
+        if isinstance(self.learners[self.learners.keys()[0]], orange.Learner):
             classifiers = [OrangeWrapperClassifier(self.learners[i](data))
                            for i in self.learners]
         else:
