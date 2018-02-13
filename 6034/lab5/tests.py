@@ -1,3 +1,5 @@
+# pylint: disable-all
+
 from tester import make_test, get_tests
 
 message = 'your trained neural-net on %s data must test with an accuracy of %1.3f'
@@ -291,7 +293,7 @@ def classifiers_for_best_ensemble_testanswer(val, original_val = None):
     accuracy, brier, auc = \
         boosted_ensemble("breast-cancer", subset,
                          DATASET_STANDARDS["breast-cancer"])
-    print "Accuracy with best classifiers: "+str(accuracy)
+    print("Accuracy with best classifiers: "+str(accuracy))
     return (accuracy > .74)
 
 make_test(type = 'VALUE',

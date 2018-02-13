@@ -1,10 +1,12 @@
+# pylint: disable-all
+
 #!/usr/bin/env python
+
 # 6.034 Lab 5
 # Neural Net
 # - In this file we have an incomplete skeleton of
 # a neural network implementation.  Follow the online instructions
 # and complete the NotImplemented methods below.
-#
 
 import math
 import random
@@ -26,6 +28,9 @@ class ValuedElement(object):
     def get_name(self):
         return self.my_name
 
+    def output(self):
+        return self.get_value()
+
     def __repr__(self):
         return "%s(%s)" %(self.my_name, self.my_value)
 
@@ -35,10 +40,10 @@ class DifferentiableElement(object):
     parts that require some differentiable element.
     """
     def output(self):
-        raise NotImplementedError, "This is an abstract method"
+        raise NotImplementedError("This is an abstract method")
 
     def dOutdX(self, elem):
-        raise NotImplementedError, "This is an abstract method"
+        raise NotImplementedError("This is an abstract method")
 
     def clear_cache(self):
         """clears any precalculated cached value"""
@@ -57,10 +62,10 @@ class Input(ValuedElement,DifferentiableElement):
     def output(self):
         """
         Returns the output of this Input node.
-        
+
         returns: number (float or int)
         """
-        raise NotImplementedError, "Implement me!"
+        return self.get_value()
 
     def dOutdX(self, elem):
         """
@@ -71,7 +76,7 @@ class Input(ValuedElement,DifferentiableElement):
 
         returns: number (float or int)
         """
-        raise NotImplementedError, "Implement me!"
+        return 0
 
 class Weight(ValuedElement):
     """
@@ -144,7 +149,6 @@ class Neuron(DifferentiableElement):
         """
         Checks if [weight] is a direct input weight into this Neuron.
         """
-        weights = self.get_descendant_weights()
         return weight.get_name() in self.get_descendant_weights()
 
     def get_weight_nodes(self):
@@ -170,7 +174,10 @@ class Neuron(DifferentiableElement):
 
         returns: number (float or int)
         """
-        raise NotImplementedError, "Implement me!"
+        inputs = map(value_for, self.get_inputs())
+        weights = map(value_for, self.get_weights())
+        product = [w*i for w,i in zip(inputs, weights)]
+        return sigmoid(sum(product))
 
     def dOutdX(self, elem):
         # Implement compute_doutdx instead!!
@@ -190,7 +197,17 @@ class Neuron(DifferentiableElement):
 
         returns: number (float/int)
         """
-        raise NotImplementedError, "Implement me!"
+        if self.has_weight(elem):
+            return sigmoid_derative(self.output()) * elem.output()
+
+        # self, target, weight
+        for weight in self.get_weights():
+            if not self.isa_descendant_weight_of(elem, weight):
+                return 0
+
+        diff = [i.dOutdX(elem) * elem.output() for i in self.get_inputs()]
+        return sum(diff)
+
 
     def get_weights(self):
         return self.my_weights
@@ -203,6 +220,15 @@ class Neuron(DifferentiableElement):
 
     def __repr__(self):
         return "Neuron(%s)" %(self.my_name)
+
+def sigmoid(x):
+    print('X for sigmoid is:', x)
+    return 1.0 / (1.0 + math.exp(-x))
+
+def sigmoid_derative(x):
+    return x * (1 - x)
+
+value_for = lambda i: i.get_value()
 
 class PerformanceElem(DifferentiableElement):
     """
@@ -222,10 +248,10 @@ class PerformanceElem(DifferentiableElement):
     def output(self):
         """
         Returns the output of this PerformanceElem node.
-        
+
         returns: number (float/int)
         """
-        raise NotImplementedError, "Implement me!"
+        return -0.5 * ((self.my_desired_val - self.my_input.output()) ** 2)
 
     def dOutdX(self, elem):
         """
@@ -236,7 +262,7 @@ class PerformanceElem(DifferentiableElement):
 
         returns: number (int/float)
         """
-        raise NotImplementedError, "Implement me!"
+        return (self.my_desired_val - self.my_input.output()) * self.my_input.dOutdX(elem)
 
     def set_desired(self,new_desired):
         self.my_desired_val = new_desired
@@ -335,7 +361,7 @@ def make_neural_net_two_layer():
     See 'make_neural_net_basic' for required naming convention for inputs,
     weights, and neurons.
     """
-    raise NotImplementedError, "Implement me!"
+    raise NotImplementedError("Implement me!")
 
 def make_neural_net_challenging():
     """
@@ -347,7 +373,7 @@ def make_neural_net_challenging():
     weights, and neurons.
     """
 
-    raise NotImplementedError, "Implement me!"
+    raise NotImplementedError("Implement me!")
 
 def make_neural_net_with_weights():
     """
@@ -366,7 +392,7 @@ def make_neural_net_with_weights():
     #                  'w2B' : 0.0,
     #                  .... # finish me!
     #
-    raise NotImplementedError, "Implement me!"
+    raise NotImplementedError("Implement me!")
     return make_net_with_init_weights_from_dict(make_neural_net_challenging,
                                                 init_weights)
 
@@ -436,18 +462,18 @@ def train(network,
 
         if abs_mean_performance < target_abs_mean_performance:
             if verbose:
-                print "iter %d: training complete.\n"\
+                print("iter %d: training complete.\n"\
                       "mean-abs-performance threshold %s reached (%1.6f)"\
                       %(iteration,
                         target_abs_mean_performance,
-                        abs_mean_performance)
+                        abs_mean_performance))
             break
 
         iteration += 1
         if iteration % 1000 == 0 and verbose:
-            print "iter %d: mean-abs-performance = %1.6f"\
+            print("iter %d: mean-abs-performance = %1.6f"\
                   %(iteration,
-                    abs_mean_performance)
+                    abs_mean_performance))
 
 
 def test(network, data, verbose=False):
@@ -467,15 +493,15 @@ def test(network, data, verbose=False):
         if round(result)==datum[-1]:
             correct+=1
             if verbose:
-                print "test(%s) returned: %s => %s [%s]" %(str(datum),
+                print("test(%s) returned: %s => %s [%s]" %(str(datum),
                                                            str(result),
                                                            rounded_result,
-                                                           "correct")
+                                                           "correct"))
         else:
             if verbose:
-                print "test(%s) returned: %s => %s [%s]" %(str(datum),
+                print("test(%s) returned: %s => %s [%s]" %(str(datum),
                                                            str(result),
                                                            rounded_result,
-                                                           "wrong")
+                                                           "wrong"))
 
     return float(correct)/len(data)

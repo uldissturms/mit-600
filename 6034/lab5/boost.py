@@ -1,3 +1,5 @@
+# pylint: disable-all
+
 from sets import Set as set
 from data_reader import *
 import math
@@ -253,7 +255,7 @@ class BoostClassifier(Classifier):
         self.renormalize_weights()
         best_classifier, best_error = self.best_classifier()
         if verbose:
-            print "[error=%4.4f]" % best_error, best_classifier
+            print("[error=%4.4f]" % best_error, best_classifier)
         self.update_weights(best_error, best_classifier)
         self.classifiers.append((best_classifier, error_to_alpha(best_error)))
 
@@ -347,7 +349,7 @@ class BoostOrangeLearner(orange.Learner):
         # FIXME: I have no idea what weightID is supposed to do.  :-/
         classifiers = []
         ourdata = data
-        if isinstance(self.learners[self.learners.keys()[0]], orange.Learner):
+        if isinstance(self.learners[list(self.learners.keys())[0]], orange.Learner):
             classifiers = [OrangeWrapperClassifier(self.learners[i](data))
                            for i in self.learners]
         else:

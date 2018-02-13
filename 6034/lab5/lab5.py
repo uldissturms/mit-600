@@ -1,12 +1,14 @@
-#
-# 6.034 Fall 2010 lab 5
-# Name:
-# Email:
-#
+# pylint: disable-all
+
+"""
+6.034 Fall 2010 lab 5
+Name: Uldis Sturms
+Email: uldis.sturms@gmail.com
+"""
+
 from data_reader import *
 from boost import *
-from orange_for_6034 import *
-from neural_net_data import *
+import Orange
 import neural_net
 
 SVM_TYPE = orange.SVMLearner.C_SVC
@@ -60,14 +62,14 @@ def most_misclassified(classifier, n=5):
     misclassified the most (based on their final weights). The
     most-misclassified datum should be at the beginning of the list.
 
-	You will need to use the "legislator_info(datum)" function to put your
-	output in the correct format.
+        You will need to use the "legislator_info(datum)" function to put your
+        output in the correct format.
 
-	classifier: instance of Classifier -- used to classify the data
-	n: int -- the number of most-misclassified data points to return
+        classifier: instance of Classifier -- used to classify the data
+        n: int -- the number of most-misclassified data points to return
 
-	returns: list of data points (each passed through legislator_info) that were
-			 misclassified most often
+        returns: list of data points (each passed through legislator_info) that were
+                         misclassified most often
     """
     raise NotImplementedError
 
@@ -99,9 +101,9 @@ most_misclassified_boost = lambda n: most_misclassified(boost, n)
 
 ########################################################################
 def show_decisions(learner, data):
-    print "  "+learner.name+":"
+    print("  "+learner.name+":")
     classifier = learner(data) # Train on the data
-    print "  "+str(classifier)
+    print("  "+str(classifier))
     total = 0
     for i in range(len(data)): # Test each of the same data points
         decision = classifier(data[i])
@@ -112,57 +114,56 @@ def show_decisions(learner, data):
         print ("    %d: %5.3f -> %s (should be %s) %scorrect" %
                (i+1, probabilities[1], decision, data[i].getclass(),
                 ("" if correct else "in")))
-    print "    accuracy on training data: %1.2f" % (float(total)/len(data))
+    print("    accuracy on training data: %1.2f" % (float(total)/len(data)))
 
 def describe_and_classify(filename, learners):
     data = orange.ExampleTable(filename)
-    print "Classes:",len(data.domain.classVar.values)
-    print "Attributes:",len(data.domain.attributes)
+    print("Classes:",len(data.domain.classVar.values))
+    print("Attributes:",len(data.domain.attributes))
 
     # obtain class distribution
     c = [0] * len(data.domain.classVar.values)
     for e in data:
         c[int(e.getclass())] += 1
-    print "Instances:", len(data), "total",
+    print("Instances:", len(data), "total", " ")
     for i in range(len(data.domain.classVar.values)):
-        print ",", c[i], "with class", data.domain.classVar.values[i],
-    print
-    print "Possible classes:", data.domain.classVar.values
+        print(",", c[i], "with class", data.domain.classVar.values[i])
+    print()
+    print("Possible classes:", data.domain.classVar.values)
 
     for name in learners:
         show_decisions(learners[name], data)
 
-    print "Decision Tree boundaries:"
-    orngTree.printTxt(learners["dt"](data))
+    print("Decision Tree boundaries:")
+    learners["dt"](data).to_string()
 
     # Now we'll cross-validate with the same learners.
-    print
-    print "Accuracy with cross-validation:"
+    print()
+    print("Accuracy with cross-validation:")
 
 
     classifiers = [learners[k] for k in learners]
-    results = orngTest.crossValidation(classifiers, data,
+    results = Orange.evaluation.testing.cross_validation(classifiers, data,
                                        folds=min(10,len(data)))
 
-    confusion_matrices = orngStat.confusionMatrices(results)
-    #f_scores   = orngStat.F1(confusion_matrices)
+    confusion_matrices = Orange.evaluation.scoring.confusion_matrices(results)
     # http://en.wikipedia.org/wiki/F_score
-    accuracies = orngStat.CA(results)
+    accuracies = Orange.evaluation.scoring.CA(results)
     # http://en.wikipedia.org/wiki/Accuracy
-    brierscores= orngStat.BrierScore(results)
+    brierscores= Orange.evaluation.scoring.Brier_score(results)
     # http://en.wikipedia.org/wiki/Brier_score
-    ROC_areas  = orngStat.AUC(results) # Area under the ROC curve
+    ROC_areas  = Orange.evaluation.scoring.AUC(results) # Area under the ROC curve
     # http://en.wikipedia.org/wiki/ROC_curve
 
     # NOTE: many other measurements are available.
 
-    print "  Confusion Matrices:"
+    print("  Confusion Matrices:")
     for name in learners:
         classifier = learners[name]
         i = classifiers.index(classifier)
-        print "  %5s: %s" % (name, confusion_matrices[i])
+        print("  %5s: %s" % (name, confusion_matrices[i]))
 
-    print "  Classifier   accuracy   Brier       AUC"
+    print("  Classifier   accuracy   Brier       AUC")
     for name in learners:
         classifier = learners[name]
         i = classifiers.index(classifier)
@@ -173,7 +174,7 @@ def describe_and_classify(filename, learners):
 
 learners = {
     "maj" : orange.MajorityLearner(), # a useful baseline
-    "dt"  : orngTree.TreeLearner(sameMajorityPruning=1, mForPruning = 2),
+    "dt"  : Orange.classification.tree.TreeLearner(sameMajorityPruning=1, mForPruning = 2),
     "knn" : orange.kNNLearner(k = 10),
     "svml": orange.SVMLearner(kernel_type = orange.SVMLearner.Linear,
                               probability = True, svm_type=SVM_TYPE),
@@ -254,13 +255,13 @@ def boosted_ensemble(filename, learners, standard, verbose=False):
         # Print the ensemble classifier that was trained on all of the
         # data.  For debugging the constituents of the ensemble classifier.
         classifier = ensemble_learner(data)
-        print "ensemble classifier: %s" %(classifier)
+        print("ensemble classifier: %s" %(classifier))
 
-    ensemble_crossval = orngTest.crossValidation([ensemble_learner], data,
+    ensemble_crossval = Orange.evaluation.testing.cross_validation([ensemble_learner], data,
                                                  folds=min(10,len(data)))
-    accuracies = orngStat.CA(ensemble_crossval)
-    brierscores= orngStat.BrierScore(ensemble_crossval)
-    ROC_areas  = orngStat.AUC(ensemble_crossval)
+    accuracies = Orange.evaluation.scoring.CA(ensemble_crossval)
+    brierscores= Orange.evaluation.scoring.Brier_score(ensemble_crossval)
+    ROC_areas  = Orange.evaluation.scoring.AUC(ensemble_crossval)
     return accuracies[0], brierscores[0], ROC_areas[0]
 
 DATASET_STANDARDS={
@@ -279,7 +280,7 @@ if __name__ == "__main__":
     dataset = "H004"
 
     describe_and_classify(dataset, learners)
-    print "Boosting with our suite of orange classifiers:"
+    print("Boosting with our suite of orange classifiers:")
     print ("  accuracy: %.3f, brier: %.3f, auc: %.3f" %
            boosted_ensemble(dataset, learners, DATASET_STANDARDS[dataset]))
 
@@ -294,9 +295,9 @@ classifiers_for_best_ensemble = ['maj', 'dt', 'knn', 'svml',
 
 
 ## The standard survey questions.
-HOW_MANY_HOURS_THIS_PSET_TOOK = None
-WHAT_I_FOUND_INTERESTING = None
-WHAT_I_FOUND_BORING = None
+HOW_MANY_HOURS_THIS_PSET_TOOK = 5
+WHAT_I_FOUND_INTERESTING = 'implementing neural net from template'
+WHAT_I_FOUND_BORING = 'trying to follow the lab5 docs - looking for a needle in a haystack'
 
 
 ## The following code is used by the tester; please leave it in place!
@@ -318,7 +319,7 @@ def classifier_tester_helper(classifier_name, data_set):
             classifier.reset()
             classifier.train(original_classifier_count)
             return
-    raise Exception, "Error: Classifier %s doesn't exist!, can't test it" % classifier_name
+    raise Exception("Error: Classifier %s doesn't exist!, can't test it" % classifier_name)
 
 from neural_net import *
 def neural_net_tester(network_maker_func,
