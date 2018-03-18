@@ -322,6 +322,7 @@ def classifier_tester_helper(classifier_name, data_set):
     raise Exception("Error: Classifier %s doesn't exist!, can't test it" % classifier_name)
 
 from neural_net import *
+from neural_net_data import *
 def neural_net_tester(network_maker_func,
                       train_dataset_name,
                       test_dataset_name,
