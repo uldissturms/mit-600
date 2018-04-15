@@ -163,8 +163,8 @@ class BoostClassifier(Classifier):
 
         returns: int (+1 or -1)
         """
-        # Fill me in! (the answer given is not correct!)
-        return 1
+        result = sum([c.classify(obj) * w for c, w in self.classifiers])
+        return 1 if result >= 0 else -1
 
     def orange_classify(self, obj):
         """
@@ -179,8 +179,7 @@ class BoostClassifier(Classifier):
 
         returns: float (between 0 and 1)
         """
-        # Fill me in! (the answer given is not correct!)
-        return 1
+        return sigmoid(self.classify(obj))
 
     def best_classifier(self):
         """
@@ -268,8 +267,12 @@ class BoostClassifier(Classifier):
 
         returns: Nothing (only updates self.data_weights)
         """
-        # Fill me in!
-        pass
+        for idx, data in enumerate(self.data):
+            delta = (
+                1/(1-best_error) if best_classifier.classify(data) == self.standard.classify(data) # decresase for correct
+                else 1/best_error # increase for incorrect
+            )
+            self.data_weights[idx] = .5*delta*self.data_weights[idx]
 
     def __str__(self):
         classifier_part = '\n'.join(["%4.4f: %s" % (weight, c) for c, weight in
