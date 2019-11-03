@@ -878,8 +878,7 @@ class CrossVerifier(object):
     left_edge = min([wire.x1 for wire in layer.wires.values()])
     for wire in layer.wires.values():
       if wire.is_horizontal():
-        self.events.append([wire.x1, 0, wire.object_id, 'add', wire])
-        self.events.append([wire.x2, 2, wire.object_id, 'remove', wire])
+        self.events.append([left_edge, 0, wire.object_id, 'add', wire])
       else:
         self.events.append([wire.x1, 1, wire.object_id, 'query', wire])
 
@@ -895,8 +894,6 @@ class CrossVerifier(object):
       
       if event_type == 'add':
         self.index.add(KeyWirePair(wire.y1, wire))
-      elif event_type == 'remove':
-        self.index.remove(KeyWirePair(wire.y1, wire))
       elif event_type == 'query':
         self.trace_sweep_line(event_x)
         cross_wires = []
@@ -920,7 +917,45 @@ class CrossVerifier(object):
     """
     # NOTE: this is overridden in TracedCrossVerifier
     pass
-
+  
+### SOLUTION BLOCK
+  if os.environ.get('CROSS') == 'sweep':
+    def _events_from_layer(self, layer):
+      """Populates the sweep line events from the wire layer."""
+      for wire in layer.wires.values():
+        if wire.is_horizontal():
+          self.events.append([wire.x1, 0, wire.object_id, 'add', wire])
+          self.events.append([wire.x2, 2, wire.object_id, 'remove', wire])
+        else:
+          self.events.append([wire.x1, 1, wire.object_id, 'query', wire])
+  
+    def _compute_crossings(self, count_only):
+      """Implements count_crossings and wire_crossings."""
+      if count_only:
+        result = 0
+      else:
+        result = self.result_set
+  
+      for event in self.events:
+        event_x, event_type, wire = event[0], event[3], event[4]
+        self.trace_sweep_line(event_x)
+        
+        if event_type == 'add':
+          self.index.add(KeyWirePair(wire.y1, wire))
+        elif event_type == 'remove':
+          self.index.remove(KeyWirePair(wire.y1, wire))
+        elif event_type == 'query':
+          if count_only:
+            result += self.index.count(KeyWirePairL(wire.y1),
+                                       KeyWirePairH(wire.y2))
+          else:
+            for kwp in self.index.list(KeyWirePairL(wire.y1),
+                                       KeyWirePairH(wire.y2)):
+              result.add_crossing(wire, kwp.wire)
+    
+      return result
+### END SOLUTION BLOCK
+  
 class TracedCrossVerifier(CrossVerifier):
   """Augments CrossVerifier to build a trace for the visualizer."""
   
