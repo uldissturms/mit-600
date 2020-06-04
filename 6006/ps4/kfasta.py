@@ -10,15 +10,19 @@
 import unittest
 
 # An iterator that returns the nucleotide sequence stored in the given FASTA file.
+
+
 class FastaSequence:
     def __init__(self, filename):
         self.f = open(filename, 'r')
         self.buf = ''
         self.info = self.f.readline()
         self.pos = 0
+
     def __iter__(self):
         return self
-    def next(self):
+
+    def __next__(self):
         while '' == self.buf:
             self.buf = self.f.readline()
             if '' == self.buf:
@@ -30,6 +34,7 @@ class FastaSequence:
         self.pos += 1
         return nextchar
 
+
 def getSequenceLength(filename):
     seq = FastaSequence(filename)
     n = 0
@@ -38,18 +43,22 @@ def getSequenceLength(filename):
     return n
 
 # Returns all subsequences of length k in seq.
+
+
 def subsequences(seq, k):
     try:
         subseq = ''
         while True:
             while len(subseq) < k:
-                subseq += seq.next()
+                subseq += next(seq)
             yield subseq
             subseq = subseq[1:]
     except StopIteration:
         return
 
 # Simple sanity checks
+
+
 class TestKFASTA(unittest.TestCase):
     def test_readseq(self):
         seq = FastaSequence('trivial.fa')
@@ -57,12 +66,15 @@ class TestKFASTA(unittest.TestCase):
         for c in seq:
             seqstr += c
         self.assertTrue('ABCDEFGHIJKLMNOPQRSTUVWXYZ' == seqstr)
+
     def test_subseq(self):
         seq = FastaSequence('trivial.fa')
         i = 0
         for subseq in subsequences(seq, 3):
-            print subseq
+            print(subseq)
             i += 1
         self.assertTrue(24 == i)
-#if __name__ == '__main__':
-#    unittest.main()
+
+
+if __name__ == '__main__':
+    unittest.main()
