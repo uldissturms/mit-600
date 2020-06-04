@@ -7,3 +7,11 @@
 ### [Recitation Videos](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/recitation-videos/)
 
 ### [Exams](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/exams/)
+
+### Status
+
+Lectures: Done
+
+Problem sets: 4
+
+Recitations: 9b
