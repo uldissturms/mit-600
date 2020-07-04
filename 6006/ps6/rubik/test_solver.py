@@ -1,8 +1,9 @@
 #!/usr/bin/python
 import unittest
-import solver
+
 import rubik
-import sys
+import solver
+
 
 class TestSolver(unittest.TestCase):
     def testShortestPath0(self):
@@ -70,6 +71,7 @@ class TestSolver(unittest.TestCase):
         for move in path:
             current = rubik.perm_apply(move, current)
         self.assertEqual(current, end)
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestSolver)
