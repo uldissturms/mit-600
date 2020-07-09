@@ -12,6 +12,6 @@
 
 Lectures: Done
 
-Problem sets: 5
+Problem sets: 7
 
-Recitations: 11
+Recitations: Done
