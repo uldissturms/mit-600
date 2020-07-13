@@ -53,7 +53,7 @@ None.
 
 \newcommand{\answerIIaPear}{
 %%% PROBLEM 2(a) PEAR ANSWER START %%%
-0
+1
 %%% PROBLEM 2(a) PEAR ANSWER END %%%
 }
 
@@ -77,13 +77,13 @@ None.
 
 \newcommand{\answerIIbPear}{
 %%% PROBLEM 2(b) PEAR ANSWER START %%%
-0
+2
 %%% PROBLEM 2(b) PEAR ANSWER END %%%
 }
 
 \newcommand{\answerIIcDale}{
 %%% PROBLEM 2(c) DALE ANSWER START %%%
-0
+120
 %%% PROBLEM 2(c) DALE ANSWER END %%%
 }
 
@@ -107,91 +107,91 @@ None.
 
 \newcommand{\answerIId}{\solution{
 %%% PROBLEM 2(d) ANSWER START %%%
-0
+4
 %%% PROBLEM 2(d) ANSWER END %%%
 }}
 
 \newcommand{\answerIIe}{\solution{
 %%% PROBLEM 2(e) ANSWER START %%%
-0
+1
 %%% PROBLEM 2(e) ANSWER END %%%
 }}
 
 \newcommand{\answerIIf}{\solution{
 %%% PROBLEM 2(f) ANSWER START %%%
-0
+2
 %%% PROBLEM 2(f) ANSWER END %%%
 }}
 
 \newcommand{\answerIIg}{\solution{
 %%% PROBLEM 2(g) ANSWER START %%%
-0
+3
 %%% PROBLEM 2(g) ANSWER END %%%
 }}
 
 \newcommand{\answerIIh}{\solution{
 %%% PROBLEM 2(h) ANSWER START %%%
-0 0 0
+3 5
 %%% PROBLEM 2(h) ANSWER END %%%
 }}
 
 \newcommand{\answerIIi}{\solution{
 %%% PROBLEM 2(i) ANSWER START %%%
-0
+10
 %%% PROBLEM 2(i) ANSWER END %%%
 }}
 
 \newcommand{\answerIIj}{\solution{
 %%% PROBLEM 2(j) ANSWER START %%%
-0
+10
 %%% PROBLEM 2(j) ANSWER END %%%
 }}
 
 \newcommand{\answerIIk}{\solution{
 %%% PROBLEM 2(k) ANSWER START %%%
-0
+1
 %%% PROBLEM 2(k) ANSWER END %%%
 }}
 
 \newcommand{\answerIIl}{\solution{
 %%% PROBLEM 2(l) ANSWER START %%%
-0
+1
 %%% PROBLEM 2(l) ANSWER END %%%
 }}
 
 \newcommand{\answerIIm}{\solution{
 %%% PROBLEM 2(m) ANSWER START %%%
-0
+7
 %%% PROBLEM 2(m) ANSWER END %%%
 }}
 
 \newcommand{\answerIIn}{\solution{
 %%% PROBLEM 2(n) ANSWER START %%%
-0
+5
 %%% PROBLEM 2(n) ANSWER END %%%
 }}
 
 \newcommand{\answerIIo}{\solution{
 %%% PROBLEM 2(o) ANSWER START %%%
-0
+2
 %%% PROBLEM 2(o) ANSWER END %%%
 }}
 
 \newcommand{\answerIIp}{\solution{
 %%% PROBLEM 2(p) ANSWER START %%%
-0
+5
 %%% PROBLEM 2(p) ANSWER END %%%
 }}
 
 \newcommand{\answerIIq}{\solution{
 %%% PROBLEM 2(q) ANSWER START %%%
-0
+3
 %%% PROBLEM 2(q) ANSWER END %%%
 }}
 
 \newcommand{\answerIIrDale}{
 %%% PROBLEM 2(r) DALE ANSWER START %%%
-0
+1
 %%% PROBLEM 2(r) DALE ANSWER END %%%
 }
 
@@ -209,31 +209,31 @@ None.
 
 \newcommand{\answerIIrPear}{
 %%% PROBLEM 2(r) PEAR ANSWER START %%%
-0
+1
 %%% PROBLEM 2(r) PEAR ANSWER END %%%
 }
 
 \newcommand{\answerIIsDale}{
 %%% PROBLEM 2(s) DALE ANSWER START %%%
-0
+3
 %%% PROBLEM 2(s) DALE ANSWER END %%%
 }
 
 \newcommand{\answerIIsJCN}{
 %%% PROBLEM 2(s) JCN ANSWER START %%%
-0
+3
 %%% PROBLEM 2(s) JCN ANSWER END %%%
 }
 
 \newcommand{\answerIIsMacroware}{
 %%% PROBLEM 2(s) MACROWARE ANSWER START %%%
-0
+2
 %%% PROBLEM 2(s) MACROWARE ANSWER END %%%
 }
 
 \newcommand{\answerIIsPear}{
 %%% PROBLEM 2(s) PEAR ANSWER START %%%
-0
+1
 %%% PROBLEM 2(s) PEAR ANSWER END %%%
 }
 
@@ -241,10 +241,70 @@ None.
 %%% PROBLEM 2(t) ANSWER START %%%
 \begin{codebox}
 \Procname{$\proc{StockLimited}(\total, \stockCount, \priceStart, \priceEnd, \limit)$}
-\li Insert your pseudocode here.
+```python
+def sort_by_profit(ss, es, ls):
+    rs = range(len(ss))
+    xs = sorted(map(lambda x: (es[x] - ss[x], x), rs), reverse=True)
+    return (
+        [ss[x] for _, x in xs],
+        [es[x] for _, x in xs],
+        [ls[x] for _, x in xs],
+    )
+
+
+# o(c^2t)
+def stock_limited(total, count, start, end, limit):
+    profit = {}
+    purchase = {}
+
+    # o(clogc)
+    start, end, limit = map(
+        lambda xs: [0] + xs, sort_by_profit(start, end, limit)
+    )
+
+    # o(c^2t)
+    for c in range(total + 1):
+        profit[c, 0] = c
+        purchase[c, 0] = [0] * (count + 1)
+
+        # o(c)
+        for s in range(1, count + 1):
+            profit[c, s] = profit[c, s - 1]
+            purchase[c, s] = purchase[c, s - 1]
+
+            if start[s] <= c:
+                lo = c - start[s]
+                pur = purchase[lo, s]
+
+                if pur[s] < limit[s]:
+                    if profit[c, s] < end[s] + profit[lo, s]:
+                        profit[c, s] = end[s] + profit[lo, s]
+                        # o(c)
+                        pur = pur[:]
+                        pur[s] += 1
+                        purchase[c, s] = pur
+                else:
+                    if profit[c, s] < end[s] + profit[lo, s - 1]:
+                        profit[c, s] = end[s] + profit[lo, s - 1]
+                        # o(c)
+                        pur = purchase[lo, s - 1][:]
+                        pur[s] += 1
+                        purchase[c, s] = pur
+
+    return profit[(total, count)]
+```
 \end{codebox}
 
-Remember to analyze your pseudocode as well.
+recurrence relation:
+
+profit[c, s] = max{
+  profit[c, s - 1],
+  profit[c - start[s], s] + end[s], # if limit not exceeded for stock s
+  profit[c - start[s], s - 1] + end[s], # if limit exceeded for stock s
+}
+
+this recurrence solves the problem since we take the best option as long as we can and then consider next best option until we have solved the problem for all keys [c, s]. note that it is important that stocks are sorted by their return descending before we start filling in dp tables.
+
 %%% PROBLEM 2(t) ANSWER END %%%
 }}
 

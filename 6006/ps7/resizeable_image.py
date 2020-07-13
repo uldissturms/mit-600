@@ -26,6 +26,7 @@ class ResizeableImage(imagematrix.ImageMatrix):
                 )
                 dp[x, y] = best_e + self.energy(x, y)
                 p[x, y] = best_p
+
         min_e = float('inf')
         min_x = None
         for x in range(self.width):

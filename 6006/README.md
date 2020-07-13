@@ -12,6 +12,6 @@
 
 Lectures: Done
 
-Problem sets: 7
+Problem sets: Done
 
 Recitations: Done
